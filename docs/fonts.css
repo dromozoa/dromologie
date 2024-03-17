@@ -1,0 +1,48 @@
+.font-sans-serif {
+  font-family: sans-serif;
+}
+
+.font-serif {
+  font-family: serif;
+}
+
+.font-biz-udpmincho {
+  font-family: "BIZ UDPMincho", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-noto-serif-jp {
+  font-family: "Noto Serif JP", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-sawarabi-mincho {
+  font-family: "Sawarabi Mincho", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-shippori-mincho {
+  font-family: "Shippori Mincho", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.font-zen-old-mincho {
+  font-family: "Zen Old Mincho", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+  line-height: 2;
+}
+
+.melos {
+  width: 24em;
+  /*
+  text-align: justify;
+  */
+}
