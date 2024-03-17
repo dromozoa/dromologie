@@ -9,29 +9,35 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPMincho&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDMincho:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPMincho:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="fonts.css">
-  <script defer src="fonts.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+  <link href="fonts.css" rel="stylesheet">
+  <script src="fonts.js" defer></script>
 </head>
-<body class="font-default">
+<body>
+<div class="main font-family-sans-serif">
 
 <h1>フォントの確認</h1>
 
 <div>
-  <select class="font-select" size="7">
-    <option value="font-sans-serif">sans-serif</option>
-    <option value="font-serif">serif</option>
-    <option value="font-biz-udpmincho">BIZ UDPMincho</option>
-    <option value="font-noto-serif-jp">Noto Serif JP</option>
-    <option value="font-sawarabi-mincho">Sawarabi Mincho</option>
-    <option value="font-shippori-mincho">Shippori Mincho</option>
-    <option value="font-zen-old-mincho">Zen Old Mincho</option>
+  <select id="font-family" size="9">
+    <option value="font-family-sans-serif" selected>sans-serif</option>
+    <option value="font-family-serif">serif</option>
+    <option value="font-family-biz-udmincho">BIZ UDMincho</option>
+    <option value="font-family-biz-udpmincho">BIZ UDPMincho</option>
+    <option value="font-family-noto-serif-jp">Noto Serif JP</option>
+    <option value="font-family-sawarabi-mincho">Sawarabi Mincho</option>
+    <option value="font-family-shippori-mincho">Shippori Mincho</option>
+    <option value="font-family-shippori-mincho-b1">Shippori Mincho B1</option>
+    <option value="font-family-zen-old-mincho">Zen Old Mincho</option>
   </select>
+  <input id="font-weight-bold" type="checkbox"><label for="font-weight-bold">ボールド</label>
+  <input id="text-align-justify" type="checkbox"><label for="text-align-justify">両端揃え</label>
 </div>
 
 <h2>走れメロス</h2>
@@ -114,5 +120,6 @@
 <div style="text-align:right">（古伝説と、シルレルの詩から。）</div>
 </div>
 
+</div>
 </body>
 </html>

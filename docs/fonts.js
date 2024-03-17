@@ -5,13 +5,29 @@
 //-------------------------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector(".font-select").addEventListener("change", ev => {
-    ev.preventDefault();
-    document.body.classList.forEach(v => {
-      if (v.startsWith("font-")) {
-        document.body.classList.replace(v, ev.target.value);
+  document.querySelector("#font-family").addEventListener("change", ev => {
+    const node = document.querySelector(".main");
+    node.classList.forEach(v => {
+      if (v.startsWith("font-family-")) {
+        node.classList.replace(v, ev.target.value);
       }
     });
+  });
+
+  document.querySelector("#font-weight-bold").addEventListener("change", ev => {
+    if (ev.target.checked) {
+      document.querySelector(".melos").classList.add("font-weight-bold");
+    } else {
+      document.querySelector(".melos").classList.remove("font-weight-bold");
+    }
+  });
+
+  document.querySelector("#text-align-justify").addEventListener("change", ev => {
+    if (ev.target.checked) {
+      document.querySelector(".melos").classList.add("text-align-justify");
+    } else {
+      document.querySelector(".melos").classList.remove("text-align-justify");
+    }
   });
 });
 
