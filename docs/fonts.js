@@ -29,6 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(".melos").classList.remove("text-align-justify");
     }
   });
+
+  document.querySelector("#width-24em").addEventListener("change", ev => {
+    if (ev.target.checked) {
+      document.querySelector(".main").classList.add("width-24em");
+    } else {
+      document.querySelector(".main").classList.remove("width-24em");
+    }
+  });
 });
 
 //-------------------------------------------------------------------------
