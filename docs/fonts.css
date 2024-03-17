@@ -53,3 +53,7 @@ body {
 .width-24em {
   width: 24em;
 }
+
+.hide {
+  display: none;
+}
