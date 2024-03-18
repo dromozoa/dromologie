@@ -1,0 +1,18 @@
+#! /bin/sh -e
+
+fetch_us() {
+  curl --fail --silent "$1" > "us/$2.jpg"
+}
+
+mkdir -p us
+
+# https://www.lovelive-anime.jp/otonokizaka/news.php?offset=1355
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071035159778.jpg honoka
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071035271097.jpg eri
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071035384944.jpg kotori
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071035521537.jpg umi
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071036039239.jpg rin
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071036136903.jpg maki
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071036285345.jpg nozomi
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071036388944.jpg hanayo
+fetch_us https://img.sunrise-inc.co.jp/images/2014/04/thm_201404071036536757.jpg nico
