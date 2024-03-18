@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // const method = ev.data.method;
   });
 
-  navigator.serviceWorker.register("app-service-worker.js").then(registration => {
+  navigator.serviceWorker.register("service-worker.js").then(registration => {
     console.log("serviceWorker/register", registration);
     registration.addEventListener("updatefound", ev => {
       console.log("serviceWorker/registration/onupdatefound", ev);
