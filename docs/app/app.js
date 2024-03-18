@@ -6,34 +6,47 @@
 
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
 
+const log = (...message) => {
+  console.log(...message);
+
+  const node = document.createElement("div");
+  node.classList.add("logger-log");
+  node.innerText = message[0];
+  document.querySelector("#logger").append(node);
+};
+
+const error = (...message) => {
+  console.error(...message);
+  const node = document.createElement("div");
+  node.classList.add("logger-error");
+  node.innerText = message[0];
+  document.querySelector("#logger").append(node);
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
+  addEventListener("error", ev => {
+    error("検出: 大域エラー", ev);
+  });
+
+  addEventListener("unhandledrejection", ev => {
+    error("検出: 見過ごされた拒否", ev.reason);
+  });
+
   navigator.serviceWorker.addEventListener("controllerchange", ev => {
-    console.log("serviceWorker/oncontrollerchange", ev);
+    log("変更: サービスワーカーコントローラー", ev);
   });
 
   navigator.serviceWorker.addEventListener("message", ev => {
-    console.log("serviceWorker/onmessage", ev.data);
-    const method = ev.data.method;
-    if (method === "push") {
-      const node = document.createElement("div");
-      node.innerText = JSON.stringify(ev.data);
-      document.body.append(node);
-    }
-
+    log("受信: サービスワーカーメッセージ", ev.data);
     // const method = ev.data.method;
+    // if (method === "push") {
+    // }
   });
 
-  navigator.serviceWorker.register("service-worker.js").then(registration => {
-    console.log("serviceWorker/register", registration);
-    registration.addEventListener("updatefound", ev => {
-      console.log("serviceWorker/registration/onupdatefound", ev);
-    });
-  }).catch(e => {
-    console.error("serviceWorker/register/error", e);
+  const registration = await navigator.serviceWorker.register("service-worker.js");
+  registration.addEventListener("updatefound", ev => {
+    log("更新: サービスワーカー登録", ev);
   });
-
-  await sleep(1000);
-  navigator.serviceWorker.controller.postMessage({ method: "ping" });
 });
 
 //-------------------------------------------------------------------------

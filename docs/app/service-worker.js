@@ -22,10 +22,10 @@ addEventListener("fetch", ev => {
 
 addEventListener("message", ev => {
   console.log("onmessage", ev.data);
-  const method = ev.data.method;
-  if (method === "ping") {
-    ev.source.postMessage({ method: "pong" });
-  }
+  // const method = ev.data.method;
+  // if (method === "ping") {
+  //   ev.source.postMessage({ method: "pong" });
+  // }
 });
 
 addEventListener("push", async ev => {
