@@ -45,6 +45,3 @@ optimize "$result/icon-192.png"
 
 convert "$source" -units PixelsPerInch -density 72 -resize 512x512 "$result/icon-512.png"
 optimize "$result/icon-512.png"
-
-convert "$source" -units PixelsPerInch -density 72 -resize 512x512 "$result/icon-1024.png"
-optimize "$result/icon-1024.png"
