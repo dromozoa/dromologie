@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
 fetch_us() {
-  curl --fail --silent "$1" > "us/$2.jpg"
+  curl --fail --silent "$1" >"us/$2.jpg"
 }
 
 mkdir -p us

@@ -1,0 +1,41 @@
+#! /bin/sh -e
+
+fetch_aquors() {
+  name=`expr X"$2" : 'X.*/\([a-z]*\)_[a-z]*\.jpg$'`
+  curl --fail --silent "$2" >"aquors-$1/$name.jpg"
+}
+
+mkdir -p aquors-wac
+mkdir -p aquors-7th
+mkdir -p aquors-7th-wp
+
+# https://www.lovelive-anime.jp/uranohoshi/wac_project-special.php
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/chika_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/riko_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/ruby_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/dia_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/kanan_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/hanamaru_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/you_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/mari_icon.jpg
+fetch_aquors wac https://www.lovelive-anime.jp/uranohoshi/img/special/wac/yoshiko_icon.jpg
+
+# https://www.lovelive-anime.jp/uranohoshi/7thproject-special.php
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/chika_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/riko_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/ruby_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/dia_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/kanan_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/hanamaru_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/you_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/mari_icon.jpg
+fetch_aquors 7th https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/yoshiko_icon.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/chika_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/riko_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/ruby_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/dia_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/kanan_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/hanamaru_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/you_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/mari_wp.jpg
+fetch_aquors 7th-wp https://www.lovelive-anime.jp/uranohoshi/img/special/7thproject/yoshiko_wp.jpg
