@@ -40,8 +40,11 @@ convert "$tmp/icon-32.png" "$tmp/icon-16.png" "$result/icon.ico"
 convert "$source" -units PixelsPerInch -density 72 -resize 180x180 "$result/apple-touch-icon.png"
 optimize "$result/apple-touch-icon.png"
 
-convert "$source" -units PixelsPerInch -density 72 -resize 192x192 "$result/icon.png"
-optimize "$result/icon.png"
+convert "$source" -units PixelsPerInch -density 72 -resize 192x192 "$result/icon-192.png"
+optimize "$result/icon-192.png"
 
 convert "$source" -units PixelsPerInch -density 72 -resize 512x512 "$result/icon-512.png"
 optimize "$result/icon-512.png"
+
+convert "$source" -units PixelsPerInch -density 72 -resize 512x512 "$result/icon-1024.png"
+optimize "$result/icon-1024.png"
