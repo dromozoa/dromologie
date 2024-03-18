@@ -16,17 +16,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelector("#font-weight-bold").addEventListener("change", ev => {
     if (ev.target.checked) {
-      document.querySelector(".text").classList.add("font-weight-bold");
+      document.querySelectorAll(".text").forEach(node => node.classList.add("font-weight-bold"));
     } else {
-      document.querySelector(".text").classList.remove("font-weight-bold");
+      document.querySelectorAll(".text").forEach(node => node.classList.remove("font-weight-bold"));
     }
   });
 
   document.querySelector("#text-align-justify").addEventListener("change", ev => {
     if (ev.target.checked) {
-      document.querySelector(".text").classList.add("text-align-justify");
+      document.querySelectorAll(".text").forEach(node => node.classList.add("text-align-justify"));
     } else {
-      document.querySelector(".text").classList.remove("text-align-justify");
+      document.querySelectorAll(".text").forEach(node => node.classList.remove("text-align-justify"));
     }
   });
 
