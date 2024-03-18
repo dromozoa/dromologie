@@ -1,4 +1,5 @@
 #! /bin/sh -e
+set -o pipefail
 
 fetch_us() {
   curl --fail --silent "$1" >"us/$2.jpg"

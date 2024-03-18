@@ -1,0 +1,47 @@
+#! /bin/sh -e
+set -o pipefail
+
+# macOSのSIPをかいくぐる
+case X$MAGICK_HOME in
+  X) ;;
+  *) export DYLD_LIBRARY_PATH=$MAGICK_HOME/lib;;
+esac
+
+source=${1:?}
+result=${2:?}
+
+mkdir -p "$result"
+tmp=`mktemp -d .tmp-XXXXXX`
+tmp=`(cd "$tmp" && pwd)`
+trap "(cd / && rm -f -r '$tmp')" 0
+
+optimize() {
+  for i in 90 91 92 93 94 95 96 97 98 99
+  do
+    convert "$1" -quality "$i" -strip "$tmp/$i.png"
+  done
+
+  j=`ls -S -r "$1" "$tmp"/9[0-9].png | head -n 1`
+  if test "X$j" != "X$1"
+  then
+    mv "$j" "$1"
+  fi
+}
+
+convert "$source" -units PixelsPerInch -density 72 -resize 16x16 "$tmp/icon-16.png"
+optimize "$tmp/icon-16.png"
+
+convert "$source" -units PixelsPerInch -density 72 -resize 32x32 "$tmp/icon-32.png"
+optimize "$tmp/icon-32.png"
+
+convert "$tmp/icon-32.png" "$tmp/icon-16.png" "$result/icon.ico"
+
+# 余白が必要？
+convert "$source" -units PixelsPerInch -density 72 -resize 180x180 "$result/apple-touch-icon.png"
+optimize "$result/apple-touch-icon.png"
+
+convert "$source" -units PixelsPerInch -density 72 -resize 192x192 "$result/icon.png"
+optimize "$result/icon.png"
+
+convert "$source" -units PixelsPerInch -density 72 -resize 512x512 "$result/icon-512.png"
+optimize "$result/icon-512.png"

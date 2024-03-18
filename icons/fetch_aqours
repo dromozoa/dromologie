@@ -1,4 +1,5 @@
 #! /bin/sh -e
+set -o pipefail
 
 fetch_aquors() {
   name=`expr X"$2" : 'X.*/\([a-z]*\)_[a-z]*\.jpg$'`
