@@ -1,3 +1,2 @@
 .*.swp
-/src/*.dSYM
-/src/aes128gcm
+/bin
