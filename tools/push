@@ -28,8 +28,6 @@ for i = 0, 63 do
   base64_decoder[base64_encoder[i]:byte()] = i
 end
 
----------------------------------------------------------------------------
-
 local function encode_base64_url(source)
   local result = {}
   for i = 1, #source, 3 do
@@ -69,4 +67,140 @@ end
 
 ---------------------------------------------------------------------------
 
+local function encode_hex(source)
+  local result = {}
+  for i = 1, #source do
+    result[i] = ("%02X"):format(source:byte(i))
+  end
+  return table.concat(result)
+end
 
+local function random(n)
+  local handle <close> = assert(io.open("/dev/urandom"))
+  return handle:read(n)
+end
+
+---------------------------------------------------------------------------
+
+local auto_remover_metatable = {}
+
+function auto_remover_metatable:__close()
+  os.remove(self.filename)
+end
+
+local function auto_remove(filename)
+  return setmetatable({ filename = filename }, auto_remover_metatable)
+end
+
+---------------------------------------------------------------------------
+
+local tmp <close> = auto_remove(os.tmpname())
+
+local function quote(source)
+  return [[']]..source:gsub([[']], [['\'']])..[[']]
+end
+
+local function generate_private_key()
+  local command = "openssl ecparam -genkey -name prime256v1 -noout"
+  local handle <close> = assert(io.popen(command))
+  return handle:read "*a"
+end
+
+local function get_public_key(private_key)
+  do
+    local command = ("openssl ec -pubout >%s 2>/dev/null"):format(quote(tmp.filename))
+    local handle <close> = assert(io.popen(command, "w"))
+    handle:write(private_key)
+  end
+  local handle <close> = assert(io.open(tmp.filename))
+  return handle:read "*a"
+end
+
+local function export_public_key(public_key)
+  do
+    local command = ("openssl pkey -pubin -outform DER >%s"):format(quote(tmp.filename))
+    local handle <close> = assert(io.popen(command, "w"))
+    handle:write(public_key)
+  end
+  local handle <close> = assert(io.open(tmp.filename))
+  local data = handle:read "*a"
+  return encode_base64_url(data:sub(-65))
+end
+
+local function import_public_key(public_key)
+  local data
+  do
+    local command = "openssl ecparam -genkey -name prime256v1 -noout | openssl ec -pubout -outform DER 2>/dev/null"
+    local handle <close> = assert(io.popen(command))
+    data = handle:read "*a"
+  end
+  do
+    local command = ("openssl pkey -pubin -inform DER >%s"):format(quote(tmp.filename))
+    local handle <close> = assert(io.popen(command, "w"))
+    handle:write(data:sub(1, -66), decode_base64_url(public_key))
+  end
+  local handle <close> = assert(io.open(tmp.filename))
+  return handle:read "*a"
+end
+
+local function ecdh(private_key, public_key)
+  do
+    local handle <close> = assert(io.open(tmp.filename, "w"))
+    handle:write(public_key)
+  end
+  local out <close> = auto_remove(os.tmpname())
+  local command = ("openssl pkeyutl -derive -inkey /dev/stdin -peerkey %s >%s"):format(quote(tmp.filename), quote(out.filename))
+  do
+    local handle <close> = assert(io.popen(command, "w"))
+    handle:write(private_key)
+  end
+  local handle <close> = assert(io.open(out.filename))
+  return handle:read "*a"
+end
+
+local function hmac_sha256(key, message)
+  do
+    local command = ("openssl dgst -sha256 -mac HMAC -macopt hexkey:%s >%s"):format(encode_hex(key), quote(tmp.filename))
+    local handle <close> = assert(io.popen(command, "w"))
+    handle:write(message)
+  end
+  local handle <close> = assert(io.open(tmp.filename))
+  return handle:read "*a"
+end
+
+--[[
+
+{
+  "endpoint": "https://web.push.apple.com/QMBl9kim_dOohaRq5s71jjViZGsUPOCqQMySIPgVyP6OO9d2Ia8sSwkrdXQJshfZAv2O2M0iZtmD9T_tD7h94BGuKL2KHBL6ueg6ZbRVpxoM9pZ8eQfzwsOtGa7D93OnOhCxfzSIwfXN55nWyJOALL_Ep3QnbXMPKJp6A-MmqoY",
+  "keys":{
+    "p256dh": "BAZB7frNVJbrvwDiDyrgaHlDwxIzkSIwp1zuGtInMkoLEE5rTR0zd6dhT7u0JesMJ4sc0hP3WsuPsqszwuwbY_U",
+    "auth": "n_YcnODVI5XEBPTITOlalg"
+  }
+}
+
+]]
+
+
+local endpoint = "https://web.push.apple.com/QMBl9kim_dOohaRq5s71jjViZGsUPOCqQMySIPgVyP6OO9d2Ia8sSwkrdXQJshfZAv2O2M0iZtmD9T_tD7h94BGuKL2KHBL6ueg6ZbRVpxoM9pZ8eQfzwsOtGa7D93OnOhCxfzSIwfXN55nWyJOALL_Ep3QnbXMPKJp6A-MmqoY"
+local p256dh = "BAZB7frNVJbrvwDiDyrgaHlDwxIzkSIwp1zuGtInMkoLEE5rTR0zd6dhT7u0JesMJ4sc0hP3WsuPsqszwuwbY_U"
+local auth = "n_YcnODVI5XEBPTITOlalg"
+
+-- RFC 8291
+local ecdh_secret = nil
+local auth_secret = decode_base64_url(auth)
+local salt = random(16)
+
+local private_key = generate_private_key()
+io.write(private_key)
+local public_key = get_public_key(private_key)
+io.write(public_key)
+io.write(export_public_key(public_key), "\n")
+
+local ua_public = import_public_key(p256dh)
+io.write(ua_public)
+
+local key = ecdh(private_key, ua_public)
+print(encode_base64_url(key))
+
+local test = hmac_sha256(key, "test")
+print(encode_base64_url(test))
