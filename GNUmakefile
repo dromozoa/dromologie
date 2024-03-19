@@ -5,9 +5,6 @@ LDLIBS += -lmbedcrypto -lmbedtls
 
 TARGETS = bin/aes128gcm
 
-# vpath %.cpp src
-# vpath % bin
-
 all:: $(TARGETS)
 
 clean::
