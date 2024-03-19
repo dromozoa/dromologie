@@ -158,9 +158,20 @@ local function ecdh(private_key, public_key)
   return handle:read "*a"
 end
 
-local function hmac_sha256(key, message)
+local function hmac_sha_256(key, message)
   do
-    local command = ("openssl dgst -sha256 -mac HMAC -macopt hexkey:%s >%s"):format(encode_hex(key), quote(tmp.filename))
+    local command = ("openssl dgst -sha256 -mac HMAC -macopt hexkey:%s -binary >%s"):format(encode_hex(key), quote(tmp.filename))
+    local handle <close> = assert(io.popen(command, "w"))
+    handle:write(message)
+  end
+  local handle <close> = assert(io.open(tmp.filename))
+  return handle:read "*a"
+end
+
+local function aes_128_gcm(key, iv, salt, message)
+  do
+    local command = ("openssl enc -aes-128-gcm -K %s -iv %s -S %s >%s"):format(encode_hex(key), encode_hex(iv), encode_hex(salt), quote(tmp.filename))
+    print(command)
     local handle <close> = assert(io.popen(command, "w"))
     handle:write(message)
   end
@@ -169,7 +180,6 @@ local function hmac_sha256(key, message)
 end
 
 --[[
-
 {
   "endpoint": "https://web.push.apple.com/QMBl9kim_dOohaRq5s71jjViZGsUPOCqQMySIPgVyP6OO9d2Ia8sSwkrdXQJshfZAv2O2M0iZtmD9T_tD7h94BGuKL2KHBL6ueg6ZbRVpxoM9pZ8eQfzwsOtGa7D93OnOhCxfzSIwfXN55nWyJOALL_Ep3QnbXMPKJp6A-MmqoY",
   "keys":{
@@ -177,15 +187,15 @@ end
     "auth": "n_YcnODVI5XEBPTITOlalg"
   }
 }
-
 ]]
 
+--[====[
 
 local endpoint = "https://web.push.apple.com/QMBl9kim_dOohaRq5s71jjViZGsUPOCqQMySIPgVyP6OO9d2Ia8sSwkrdXQJshfZAv2O2M0iZtmD9T_tD7h94BGuKL2KHBL6ueg6ZbRVpxoM9pZ8eQfzwsOtGa7D93OnOhCxfzSIwfXN55nWyJOALL_Ep3QnbXMPKJp6A-MmqoY"
 local p256dh = "BAZB7frNVJbrvwDiDyrgaHlDwxIzkSIwp1zuGtInMkoLEE5rTR0zd6dhT7u0JesMJ4sc0hP3WsuPsqszwuwbY_U"
 local auth = "n_YcnODVI5XEBPTITOlalg"
 
--- RFC 8291
+
 local ecdh_secret = nil
 local auth_secret = decode_base64_url(auth)
 local salt = random(16)
@@ -202,5 +212,42 @@ io.write(ua_public)
 local key = ecdh(private_key, ua_public)
 print(encode_base64_url(key))
 
-local test = hmac_sha256(key, "test")
+local test = hmac_sha_256(key, "test")
 print(encode_base64_url(test))
+
+]====]
+
+-- RFC 8291
+local plain_text = decode_base64_url "V2hlbiBJIGdyb3cgdXAsIEkgd2FudCB0byBiZSBhIHdhdGVybWVsb24"
+local as_public = decode_base64_url "BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8"
+local ua_public = decode_base64_url "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4"
+
+local ecdh_secret = decode_base64_url "kyrL1jIIOHEzg3sM2ZWRHDRB62YACZhhSlknJ672kSs"
+local auth_secret = decode_base64_url "BTBZMqHH6r4Tts7J_aSIgg"
+local salt = decode_base64_url "DGv6ra1nlYgDCS1FRnbzlw"
+
+local prk_key = hmac_sha_256(auth_secret, ecdh_secret)
+print(#prk_key)
+print(encode_base64_url(prk_key))
+local key_info = "WebPush: info\0"..ua_public..as_public
+-- print(encode_base64_url(key_info) == "V2ViUHVzaDogaW5mbwAEJXGyvs3942BVGq8e0PTNNmwRzr5VX4m8t7GGpTM5FzFo7OLr4BhZe9MEebhuPI-OztV3ylkYfpJGmQ22ggCLDgT-M_SrDepxkU21WCP3O1SUj0EwbZIHMtu5pZpTKGSCIA5Zent7wmC6HCJ5mFgJkuk5cwAvMBKiiujwa7t45ewP")
+local ikm = hmac_sha_256(prk_key, key_info.."\1")
+print(encode_base64_url(ikm))
+local prk = hmac_sha_256(salt, ikm)
+print(encode_base64_url(prk))
+local cek_info = "Content-Encoding: aes128gcm\0"
+local cek = hmac_sha_256(prk, cek_info.."\1"):sub(1, 16)
+print(encode_base64_url(cek))
+local nonce_info = "Content-Encoding: nonce\0"
+local nonce = hmac_sha_256(prk, nonce_info.."\1"):sub(1, 12)
+print(encode_base64_url(nonce))
+
+local record_size = 4096
+local rs = (">I4"):pack(record_size)
+
+local header = salt..rs..string.char(#as_public)..as_public
+print(encode_base64_url(header))
+print(#header)
+
+local cipher_text = aes_128_gcm(cek, nonce, salt, plain_text.."\2")
+print(cipher_text)
