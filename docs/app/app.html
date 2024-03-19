@@ -23,7 +23,49 @@
 
 <h1>アプリ化の確認</h1>
 
-<div id="logger"></div>
+<h2>通知</h2>
+
+<div class="notification">
+  <table>
+    <tr>
+      <td>Notification.permission</td>
+      <td class="permission"></td>
+    </tr>
+    <tr>
+      <td>Notification.maxActions</td>
+      <td class="max-actions"></td>
+    </tr>
+  </table>
+  <div>
+    <button class="request-permission">通知の許可を要求</button>
+  </div>
+  <div>
+    <form class="create">
+      <div>
+        <select class="icon">
+          <option value="../us-honoka/icon-192.png">honoka</option>
+          <option value="../us-eri/icon-192.png">eri</option>
+          <option value="../us-kotori/icon-192.png">kotori</option>
+          <option value="../us-umi/icon-192.png">umi</option>
+          <option value="../us-rin/icon-192.png">rin</option>
+          <option value="../us-maki/icon-192.png">maki</option>
+          <option value="../us-nozomi/icon-192.png">nozomi</option>
+          <option value="../us-hanayo/icon-192.png">hanayo</option>
+          <option value="../us-nico/icon-192.png">nico</option>
+        </select>
+      </div>
+      <div>
+        <input class="title" type="text" placeholder="タイトル">
+      </div>
+      <div>
+        <input class="body" type="text" placeholder="本文">
+      </div>
+      <div>
+        <button type="submit">通知を作成</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 </div>
 </body>

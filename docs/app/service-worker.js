@@ -5,12 +5,12 @@
 //-------------------------------------------------------------------------
 
 addEventListener("install", ev => {
-  console.log("oninstall", ev);
+  console.log("install", ev);
   ev.waitUntil(skipWaiting());
 });
 
 addEventListener("activate", ev => {
-  console.log("onactivate", ev);
+  console.log("activate", ev);
   ev.waitUntil(clients.claim());
 });
 
@@ -21,19 +21,14 @@ addEventListener("fetch", ev => {
 });
 
 addEventListener("message", ev => {
-  console.log("onmessage", ev.data);
-  // const method = ev.data.method;
-  // if (method === "ping") {
-  //   ev.source.postMessage({ method: "pong" });
-  // }
+  console.log("message", ev.data);
 });
 
 addEventListener("push", async ev => {
-  console.log("onpush", ev.data, ev.data.json());
+  console.log("push", ev);
   const clients = await globalThis.clients.matchAll();
-  console.log("onpush", clients.length);
-  clients.forEach(client => client.postMessage({ method: "push", body: ev.data.json() }));
-  // TODO 通知を表示する
+  console.log("push", clients);
+  clients.forEach(client => client.postMessage({ method: "push", body: ev.data }));
 });
 
 //-------------------------------------------------------------------------

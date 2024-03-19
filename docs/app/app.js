@@ -2,50 +2,75 @@
 (() => {
 "use strict";
 
+if (!globalThis.dromologie) {
+  globalThis.dromologie = {};
+}
+const D = globalThis.dromologie;
+if (D.includeGuard) {
+  return;
+}
+D.includeGuard = true;
+
 //-------------------------------------------------------------------------
 
-const sleep = delay => new Promise(resolve => setTimeout(resolve, delay));
+D.Logging = class {
+  log(...messages) {
+    console.log(...messages);
+  }
 
-const log = (...message) => {
-  console.log(...message);
-
-  const node = document.createElement("div");
-  node.classList.add("logger-log");
-  node.innerText = message[0];
-  document.querySelector("#logger").append(node);
+  error(...messages) {
+    console.error(...messages);
+  }
 };
 
-const error = (...message) => {
-  console.error(...message);
-  const node = document.createElement("div");
-  node.classList.add("logger-error");
-  node.innerText = message[0];
-  document.querySelector("#logger").append(node);
+//-------------------------------------------------------------------------
+
+const logging = new D.Logging();
+const notifications = [];
+
+const updateNotificationView = () => {
+  document.querySelector(".notification .permission").innerText = Notification.permission;
+  document.querySelector(".notification .max-actions").innerText = Notification.maxActions;
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
+  document.querySelector(".notification .request-permission").addEventListener("click", async ev => {
+    ev.preventDefault();
+    await Notification.requestPermission();
+    updateNotificationView();
+  });
+  updateNotificationView();
+
+  document.querySelector(".notification .create").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const icon = document.querySelector(".notification .create .icon").value;
+    const title = document.querySelector(".notification .create .title").value;
+    const body = document.querySelector(".notification .create .body").value;
+    notifications.push(new Notification(title, {
+      icon: icon,
+      body: body,
+    }));
+  });
+
   addEventListener("error", ev => {
-    error("検出: 大域エラー", ev);
+    logging.error("error", ev);
   });
 
   addEventListener("unhandledrejection", ev => {
-    error("検出: 見過ごされた拒否", ev.reason);
+    logging.error("unhandledrejection", ev);
   });
 
   navigator.serviceWorker.addEventListener("controllerchange", ev => {
-    log("変更: サービスワーカーコントローラー", ev);
+    logging.log("controllerchange", ev);
   });
 
   navigator.serviceWorker.addEventListener("message", ev => {
-    log("受信: サービスワーカーメッセージ", ev.data);
-    // const method = ev.data.method;
-    // if (method === "push") {
-    // }
+    logging.log("message", ev);
   });
 
   const registration = await navigator.serviceWorker.register("service-worker.js");
   registration.addEventListener("updatefound", ev => {
-    log("更新: サービスワーカー登録", ev);
+    logging.log("updatefound", ev);
   });
 });
 

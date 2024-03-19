@@ -1,4 +1,24 @@
-body {
+body,
+button,
+input {
   font-family: "Noto Serif JP", serif;
+}
+
+body {
   line-height: 2;
+}
+
+.notification table,
+.notification td {
+  border: 1px solid #000;
+  border-collapse: collapse;
+}
+
+.notification td {
+  padding: 0.5em;
+}
+
+.notification .create .title,
+.notification .create .body {
+  width: 24em;
 }
