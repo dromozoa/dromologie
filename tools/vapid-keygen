@@ -1,0 +1,11 @@
+#! /bin/sh -e
+set -o pipefail
+
+result=${1:?}
+
+tmp=`mktemp .tmpXXXXXX`
+trap "rm -f '$tmp'" 0
+
+openssl ecparam -genkey -name prime256v1 -noout -out "$tmp"
+openssl pkcs8 -topk8 -in "$tmp" -nocrypt -out "$result"
+openssl ec -in "$tmp" -pubout -out "$result.pub"

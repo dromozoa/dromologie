@@ -11,7 +11,7 @@ source=${1:?}
 result=${2:?}
 
 mkdir -p "$result"
-tmp=`mktemp -d .tmp-XXXXXX`
+tmp=`mktemp -d .tmpXXXXXX`
 tmp=`(cd "$tmp" && pwd)`
 trap "(cd / && rm -f -r '$tmp')" 0
 
