@@ -3,7 +3,7 @@ CPPFLAGS += -I/opt/mbedtls/include
 LDFLAGS += -L/opt/mbedtls/lib
 LDLIBS += -lmbedcrypto -lmbedtls
 
-TARGETS = bin/aes-128-gcm
+TARGETS = $(addprefix bin/,$(notdir $(basename $(wildcard src/*.cpp))))
 
 all:: $(TARGETS)
 
