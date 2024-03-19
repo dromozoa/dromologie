@@ -1,5 +1,4 @@
 #include <mbedtls/build_info.h>
-#include <mbedtls/cipher.h>
 #include <mbedtls/error.h>
 #include <mbedtls/gcm.h>
 
