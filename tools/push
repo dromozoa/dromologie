@@ -168,10 +168,9 @@ local function hmac_sha_256(key, message)
   return handle:read "*a"
 end
 
-local function aes_128_gcm(key, iv, salt, message)
+local function aes_128_gcm(key, iv, message)
   do
-    local command = ("openssl enc -aes-128-gcm -K %s -iv %s -S %s >%s"):format(encode_hex(key), encode_hex(iv), encode_hex(salt), quote(tmp.filename))
-    print(command)
+    local command = ("../src/aes128gcm %s %s >%s"):format(encode_hex(key), encode_hex(iv), quote(tmp.filename))
     local handle <close> = assert(io.popen(command, "w"))
     handle:write(message)
   end
@@ -249,5 +248,5 @@ local header = salt..rs..string.char(#as_public)..as_public
 print(encode_base64_url(header))
 print(#header)
 
-local cipher_text = aes_128_gcm(cek, nonce, salt, plain_text.."\2")
-print(cipher_text)
+local cipher_text = aes_128_gcm(cek, nonce, plain_text.."\2")
+print(encode_base64_url(cipher_text))
