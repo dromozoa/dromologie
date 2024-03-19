@@ -65,10 +65,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     ev.preventDefault();
     const registration = await navigator.serviceWorker.ready;
     const sub = await(registration.pushManager.subscribe({
-      userVisibleOnly: true,
+      userVisibleOnly: document.querySelector(".push .subscribe .user-visible-only").checked,
       applicationServerKey: document.querySelector(".push .subscribe .vapid").value,
     }));
     console.log(sub);
+    await updatePushView();
+  });
+
+  document.querySelector(".push .unsubscribe").addEventListener("click", async ev => {
+    ev.preventDefault();
+    const registration = await navigator.serviceWorker.ready;
+    const sub = await registration.pushManager.getSubscription();
+    if (sub) {
+      const result = await(sub.unsubscribe());
+      console.log(result);
+    }
     await updatePushView();
   });
 
