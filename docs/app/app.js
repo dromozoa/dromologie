@@ -33,6 +33,15 @@ const updateNotificationView = () => {
   document.querySelector(".notification .max-actions").innerText = Notification.maxActions;
 };
 
+const updatePushView = async () => {
+  const registration = await navigator.serviceWorker.ready;
+  const sub = await registration.pushManager.getSubscription();
+  document.querySelector(".push .endpoint").innerText = sub ? sub.endpoint : "";
+  document.querySelector(".push .expirationTime").innerText = sub ? sub.expirationTime : "";
+  document.querySelector(".push .subscriptionId").innerText = sub ? sub.subscriptionId: "";
+  document.querySelector(".push .json").innerText = sub ? JSON.stringify(sub.toJSON()) : "";
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector(".notification .request-permission").addEventListener("click", async ev => {
     ev.preventDefault();
@@ -41,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   updateNotificationView();
 
-  document.querySelector(".notification .create").addEventListener("submit", async ev => {
+  document.querySelector(".notification .create").addEventListener("submit", ev => {
     ev.preventDefault();
     const icon = document.querySelector(".notification .create .icon").value;
     const title = document.querySelector(".notification .create .title").value;
@@ -50,6 +59,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       icon: icon,
       body: body,
     }));
+  });
+
+  document.querySelector(".push .subscribe").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const registration = await navigator.serviceWorker.ready;
+    const sub = await(registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: document.querySelector(".push .subscribe .vapid").value,
+    }));
+    console.log(sub);
+    await updatePushView();
   });
 
   addEventListener("error", ev => {
@@ -72,6 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   registration.addEventListener("updatefound", ev => {
     logging.log("updatefound", ev);
   });
+  await updatePushView();
 });
 
 //-------------------------------------------------------------------------

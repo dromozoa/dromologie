@@ -1,7 +1,9 @@
 body,
 button,
-input {
+input,
+textarea {
   font-family: "Noto Serif JP", serif;
+  font-size: 16px;
 }
 
 body {
@@ -9,12 +11,15 @@ body {
 }
 
 .notification table,
-.notification td {
+.notification td,
+.push table,
+.push td {
   border: 1px solid #000;
   border-collapse: collapse;
 }
 
-.notification td {
+.notification td,
+.push td {
   padding: 0.5em;
 }
 

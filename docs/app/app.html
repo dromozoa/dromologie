@@ -28,16 +28,16 @@
 <div class="notification">
   <table>
     <tr>
-      <td>Notification.permission</td>
+      <td>permission</td>
       <td class="permission"></td>
     </tr>
     <tr>
-      <td>Notification.maxActions</td>
+      <td>maxActions</td>
       <td class="max-actions"></td>
     </tr>
   </table>
   <div>
-    <button class="request-permission">通知の許可を要求</button>
+    <button class="request-permission">許可を要求</button>
   </div>
   <div>
     <form class="create">
@@ -61,7 +61,40 @@
         <input class="body" type="text" placeholder="本文">
       </div>
       <div>
-        <button type="submit">通知を作成</button>
+        <button type="submit">作成</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<h2>プッシュ</h2>
+
+<div class="push">
+  <table>
+    <tr>
+      <td>endpoint</td>
+      <td class="endpoint"></td>
+    </tr>
+    <tr>
+      <td>expirationTime</td>
+      <td class="expirationTime"></td>
+    </tr>
+    <tr>
+      <td>subscriptionId</td>
+      <td class="subscriptionId"></td>
+    </tr>
+    <tr>
+      <td>json</td>
+      <td class="json"></td>
+    </tr>
+  </table>
+  <div>
+    <form class="subscribe">
+      <div>
+        <textarea class="vapid" placeholder="VAPID用公開鍵" cols="40" rows="6"></textarea>
+      </div>
+      <div>
+        <button type="submit">購読</button>
       </div>
     </form>
   </div>
