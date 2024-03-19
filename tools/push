@@ -1,0 +1,72 @@
+#! /usr/bin/env lua
+
+---------------------------------------------------------------------------
+
+local base64_encoder = {
+  [62] = "-";
+  [63] = "_";
+}
+
+local n = ("A"):byte()
+for i = 0, 25 do
+  base64_encoder[i] = string.char(n + i)
+end
+
+local n = ("a"):byte() - 26
+for i = 26, 51 do
+  base64_encoder[i] = string.char(n + i)
+end
+
+local n = ("0"):byte() - 52
+for i = 52, 61 do
+  base64_encoder[i] = string.char(n + i)
+end
+
+local base64_decoder = {}
+
+for i = 0, 63 do
+  base64_decoder[base64_encoder[i]:byte()] = i
+end
+
+---------------------------------------------------------------------------
+
+local function encode_base64_url(source)
+  local result = {}
+  for i = 1, #source, 3 do
+    local a, b, c = source:byte(i, i + 2)
+    local n = #result
+    if c then
+      local v = a << 16 | b << 8 | c
+      result[#result + 1] = base64_encoder[v >> 18]..base64_encoder[v >> 12 & 0x3F]..base64_encoder[v >> 6 & 0x3F]..base64_encoder[v & 0x3F]
+    elseif b then
+      local v = a << 10 | b << 2
+      result[#result + 1] = base64_encoder[v >> 12]..base64_encoder[v >> 6 & 0x3F]..base64_encoder[v & 0x3F]
+    else
+      local v = a << 4
+      result[#result + 1] = base64_encoder[v >> 6]..base64_encoder[v & 0x3F]
+    end
+  end
+  return table.concat(result)
+end
+
+local function decode_base64_url(source)
+  local result = {}
+  for i = 1, #source, 4 do
+    local a, b, c, d = source:byte(i, i + 3)
+    if d then
+      local v = base64_decoder[a] << 18 | base64_decoder[b] << 12 | base64_decoder[c] << 6 | base64_decoder[d]
+      result[#result + 1] = string.char(v >> 16, v >> 8 & 0xFF, v & 0xFF)
+    elseif c then
+      local v = base64_decoder[a] << 10 | base64_decoder[b] << 4 | base64_decoder[c] >> 2
+      result[#result + 1] = string.char(v >> 8, v & 0xFF)
+    else
+      local v = base64_decoder[a] << 2 | base64_decoder[b] >> 4
+      result[#result + 1] = string.char(v)
+    end
+  end
+  return table.concat(result)
+end
+
+---------------------------------------------------------------------------
+
+
