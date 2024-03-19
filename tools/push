@@ -2,6 +2,10 @@
 
 ---------------------------------------------------------------------------
 
+local root = os.getenv("HOME").."/Workspace/dromologie"
+
+---------------------------------------------------------------------------
+
 local base64_encoder = {
   [62] = "-";
   [63] = "_";
@@ -170,7 +174,7 @@ end
 
 local function aes_128_gcm(key, iv, message)
   do
-    local command = ("../src/aes128gcm %s %s >%s"):format(encode_hex(key), encode_hex(iv), quote(tmp.filename))
+    local command = ("%s/bin/aes128gcm %s %s >%s"):format(quote(root), encode_hex(key), encode_hex(iv), quote(tmp.filename))
     local handle <close> = assert(io.popen(command, "w"))
     handle:write(message)
   end
