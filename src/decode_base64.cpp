@@ -8,8 +8,7 @@ using namespace dromologie;
 
 int main(int, char*[]) {
   try {
-    std::vector<char> result = decode_base64url<char>(read_all<std::string>(std::cin));
-    std::cout.write(result.data(), result.size());
+    std::cout << decode_base64<std::string>(read_all<std::string>(std::cin));
 
   } catch (const std::exception& e) {
     std::cerr << "caught exception: " << e.what() << "\n";
