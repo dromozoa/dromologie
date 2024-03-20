@@ -1,7 +1,5 @@
 #include "common.hpp"
 
-using namespace dromologie;
-
 #include <mbedtls/bignum.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/ecdsa.h>
@@ -13,6 +11,8 @@ using namespace dromologie;
 #include <iostream>
 #include <memory>
 #include <vector>
+
+using namespace dromologie;
 
 int main(int argc, char* argv[]) {
   try {
