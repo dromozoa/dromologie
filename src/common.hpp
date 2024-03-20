@@ -162,15 +162,6 @@ namespace dromologie {
   private:
     T context_;
   };
-
-  inline std::vector<unsigned char> decode_hex(const std::string& source) {
-    std::vector<unsigned char> result;
-    for (std::size_t i = 0; i < source.size(); i += 2) {
-      result.push_back(std::stoi(source.substr(i, 2), nullptr, 16));
-    }
-    return result;
-  }
-
 }
 
 #endif
