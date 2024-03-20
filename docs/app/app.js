@@ -25,7 +25,35 @@ D.Logging = class {
 
 //-------------------------------------------------------------------------
 
-D.testVapid = async () => {
+D.testVapidSign = async () => {
+  // https://datatracker.ietf.org/doc/html/rfc7515#appendix-A.3
+  const data_string
+    = "eyJhbGciOiJFUzI1NiJ9"
+    + "."
+    + "eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ";
+
+  const data = Uint8Array.from(data_string, v => v.charCodeAt(0));
+
+  const jwk = {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+    "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+    "d": "jpsQnnGQmL-YBIffH1136cspYG6-0iY7X1fCE9-E9LI",
+  };
+
+  const key = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, true, [ "sign" ]);
+  const sig = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, data));
+  console.log(sig);
+
+  const sig_hex = [...sig].map(v => v.toString(16).padStart(2, "0").toUpperCase()).join("");
+  console.log(sig_hex);
+};
+
+D.testVapidVerify = async (sig_hex) => {
+  const sig = Uint8Array.from(sig_hex.match(/..?/g).map(v => parseInt(v, 16)));
+  console.log(sig);
+
   // https://datatracker.ietf.org/doc/html/rfc7515#appendix-A.3
   const data_string
     = "eyJhbGciOiJFUzI1NiJ9"
@@ -39,12 +67,11 @@ D.testVapid = async () => {
     "crv": "P-256",
     "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
     "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
-    "d": "jpsQnnGQmL-YBIffH1136cspYG6-0iY7X1fCE9-E9LI",
   };
 
-  const key = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, true, [ "sign" ]);
-  const sig = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, data));
-  console.log(sig);
+  const key = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, true, [ "verify" ]);
+  const result = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, key, sig, data);
+  console.log(result);
 };
 
 //-------------------------------------------------------------------------

@@ -72,18 +72,11 @@ int main(int argc, char* argv[]) {
         mbedtls_ctr_drbg_random,
         ctr_drbg.get()));
 
-    std::cout
-      << "r.size " << mbedtls_mpi_size(r.get()) << "\n"
-      << "s.size " << mbedtls_mpi_size(s.get()) << "\n"
-      ;
-
     std::vector<char> buffer(256);
     size_t size1 = 0;
     check(mbedtls_mpi_write_string(r.get(), 16, &buffer[0], buffer.size(), &size1));
-    std::cout << "size1 " << size1 << "\n";
     size_t size2 = 0;
-    check(mbedtls_mpi_write_string(r.get(), 16, &buffer[0] + size1 - 1, buffer.size() - size1 + 1, &size2));
-    std::cout << "size2 " << size2 << "\n";
+    check(mbedtls_mpi_write_string(s.get(), 16, &buffer[0] + size1 - 1, buffer.size() - size1 + 1, &size2));
     std::cout << &buffer[0] << "\n";
 
   } catch (const std::exception& e) {
