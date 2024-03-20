@@ -26,14 +26,7 @@ addEventListener("message", ev => {
 
 addEventListener("push", async ev => {
   console.log("push", ev);
-  // const clients = await globalThis.clients.matchAll();
-  // console.log("push", clients);
-  // clients.forEach(client => client.postMessage({ method: "push", body: ev.data }));
-  // const notification = new Notification("プッシュ通知", { body: ev.data });
-  // notification.addEventListener("click", () => {
-  //   const result = clients.openWindow("");
-  // });
-  registration.showNotification("プッシュ通知", { body: ev.data });
+  registration.showNotification("プッシュ通知", { body: ev.data.text() });
 });
 
 //-------------------------------------------------------------------------

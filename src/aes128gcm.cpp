@@ -12,18 +12,17 @@ using namespace dromologie;
 int main(int argc, char* argv[]) {
   try {
     if (argc < 3) {
-      std::cerr << argv[0] << " hex-key hex-iv <input >output\n";
+      std::cerr << argv[0] << " key iv <input >output\n";
       return 1;
     }
-
-    const std::vector<unsigned char> key = decode_hex(argv[1]);
-    const std::vector<unsigned char> iv = decode_hex(argv[2]);
 
     std::vector<unsigned char> input = read_all<std::vector<unsigned char>>(std::cin);
     if (input.size() > 3993) {
       std::cerr << "input too large\n";
       return 1;
     }
+    const auto key = decode_base64<std::vector<unsigned char>>(argv[1]);
+    const auto iv = decode_base64<std::vector<unsigned char>>(argv[2]);
 
     std::vector<unsigned char> output(4096);
     std::size_t output_size = 0;

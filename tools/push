@@ -179,7 +179,7 @@ end
 
 local function aes_128_gcm(key, iv, message)
   do
-    local command = ("%s/bin/aes128gcm %s %s >%s"):format(quote(root), encode_hex(key), encode_hex(iv), quote(tmp.filename))
+    local command = ("%s/bin/aes128gcm %s %s >%s"):format(quote(root), encode_base64_url(key), encode_base64_url(iv), quote(tmp.filename))
     local handle <close> = assert(io.popen(command, "w"))
     handle:write(message)
   end
@@ -192,7 +192,7 @@ local function ecdsa(key_path, message)
     local handle <close> = assert(io.open(tmp.filename, "w"))
     handle:write(message)
   end
-  local command = ("%s/bin/ecdsa %s `openssl dgst -sha256 <%s`"):format(quote(root), quote(key_path), quote(tmp.filename))
+  local command = ("cat %s | %s/bin/ecdsa `%s/bin/sha256 <%s | %s/bin/encode_base64url`"):format(quote(key_path), quote(root), quote(root), quote(tmp.filename), quote(root))
   local handle <close> = assert(io.popen(command))
   return handle:read "*a"
 end

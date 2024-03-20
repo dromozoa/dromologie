@@ -158,6 +158,7 @@ namespace dromologie {
     context& operator=(const context&) = delete;
     T* get() { return &context_; }
     T* operator->() { return &context_; }
+    T& operator*() { return context_; }
   private:
     T context_;
   };

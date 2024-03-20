@@ -12,7 +12,6 @@ int main(int, char*[]) {
     std::vector<unsigned char> buffer(4096);
 
     context<mbedtls_sha256_context, mbedtls_sha256_init, mbedtls_sha256_free> sha256;
-
     check(mbedtls_sha256_starts(sha256.get(), false));
     while (!std::cin.eof()) {
       std::cin.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
@@ -22,7 +21,6 @@ int main(int, char*[]) {
       }
     }
     check(mbedtls_sha256_finish(sha256.get(), buffer.data()));
-
     std::cout.write(reinterpret_cast<const char*>(buffer.data()), 32);
 
   } catch (const std::exception& e) {
