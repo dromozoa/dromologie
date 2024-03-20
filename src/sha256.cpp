@@ -4,17 +4,14 @@
 
 #include <exception>
 #include <iostream>
-#include <memory>
 
 using namespace dromologie;
 
 int main(int, char*[]) {
   try {
-    mbedtls_sha256_context sha256_context;
-    std::unique_ptr<mbedtls_sha256_context, decltype(&mbedtls_sha256_free)> sha256(&sha256_context, mbedtls_sha256_free);
-    mbedtls_sha256_init(sha256.get());
-
     std::vector<unsigned char> buffer(4096);
+
+    context<mbedtls_sha256_context, mbedtls_sha256_init, mbedtls_sha256_free> sha256;
 
     check(mbedtls_sha256_starts(sha256.get(), false));
     while (!std::cin.eof()) {
@@ -24,8 +21,8 @@ int main(int, char*[]) {
         check(mbedtls_sha256_update(sha256.get(), buffer.data(), size));
       }
     }
-
     check(mbedtls_sha256_finish(sha256.get(), buffer.data()));
+
     std::cout.write(reinterpret_cast<const char*>(buffer.data()), 32);
 
   } catch (const std::exception& e) {

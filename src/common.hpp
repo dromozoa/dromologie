@@ -141,9 +141,6 @@ namespace dromologie {
     return result;
   }
 
-
-
-
   inline void check(int result) {
     if (result != 0) {
       std::vector<char> buffer(256);
@@ -151,6 +148,19 @@ namespace dromologie {
       throw std::runtime_error(&buffer[0]);
     }
   }
+
+  template <class T, void (*T_init)(T*), void (*T_free)(T*)>
+  class context {
+  public:
+    context() : context_() { T_init(&context_); }
+    ~context() { T_free(&context_); }
+    context(const context&) = delete;
+    context& operator=(const context&) = delete;
+    T* get() { return &context_; }
+    T* operator->() { return &context_; }
+  private:
+    T context_;
+  };
 
   inline std::vector<unsigned char> decode_hex(const std::string& source) {
     std::vector<unsigned char> result;
