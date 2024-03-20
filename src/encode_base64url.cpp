@@ -5,7 +5,7 @@ using namespace dromologie;
 #include <exception>
 #include <iostream>
 
-int main(int argc, char* argv[]) {
+int main(int, char*[]) {
   try {
     std::vector<char> source;
     std::copy(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>(), std::back_inserter(source));

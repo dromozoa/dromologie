@@ -90,7 +90,7 @@ namespace dromologie {
 
     std::int32_t v = decoder[static_cast<std::uint8_t>(c)];
     if (v < 0) {
-      throw std::runtime_error("");
+      throw std::runtime_error("invalid character found");
     }
     return v;
   }
