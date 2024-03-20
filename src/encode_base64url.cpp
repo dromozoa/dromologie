@@ -1,15 +1,14 @@
 #include "common.hpp"
 
-using namespace dromologie;
-
 #include <exception>
 #include <iostream>
 
+using namespace dromologie;
+
 int main(int, char*[]) {
   try {
-    std::vector<char> source;
-    std::copy(std::istreambuf_iterator<char>(std::cin), std::istreambuf_iterator<char>(), std::back_inserter(source));
-    std::cout << encode_base64url(source.data(), source.size());
+    std::vector<char> data = read_all<char>(std::cin);
+    std::cout << encode_base64url(data.data(), data.size());
 
   } catch (const std::exception& e) {
     std::cerr << "caught exception: " << e.what() << "\n";

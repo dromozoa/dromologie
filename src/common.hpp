@@ -6,6 +6,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -25,6 +27,13 @@ namespace dromologie {
       mbedtls_strerror(result, &buffer[0], buffer.size());
       throw std::runtime_error(&buffer[0]);
     }
+  }
+
+  template <class T>
+  inline std::vector<T> read_all(std::istream& stream) {
+    std::vector<T> result;
+    std::copy(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>(), std::back_inserter(result));
+    return result;
   }
 
   inline std::vector<char> make_base64url_encoder() {
