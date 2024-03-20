@@ -110,6 +110,11 @@ local function generate_private_key()
   return handle:read "*a"
 end
 
+local function read_private_key(key_path)
+  local handle <close> = assert(io.open(key_path))
+  return handle:read "*a"
+end
+
 local function get_public_key(private_key)
   do
     local command = ("openssl ec -pubout >%s 2>/dev/null"):format(quote(tmp.filename))
@@ -189,91 +194,57 @@ local function ecdsa(key_path, message)
   end
   local command = ("%s/bin/ecdsa %s `openssl dgst -sha256 <%s`"):format(quote(root), quote(key_path), quote(tmp.filename))
   local handle <close> = assert(io.popen(command))
-  local data = handle:read "*a"
-  return encode_base64_url(data)
+  return handle:read "*a"
 end
 
--- RFC 7515
--- print(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q")
--- print(encode_hex(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q"))
--- print(encode_hex "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ")
--- print(encode_hex(decode_base64_url "jpsQnnGQmL-YBIffH1136cspYG6-0iY7X1fCE9-E9LI"))
-print(ecdsa(os.getenv("HOME").."/.dromologie/vapid", "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ"))
+local key_path, endpoint, p256dh, secret, sub = ...
+local message = io.read "*a"
 
--- RFC 8292
--- print(decode_base64_url "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9")
--- print(decode_base64_url "eyJhdWQiOiJodHRwczovL3B1c2guZXhhbXBsZS5uZXQiLCJleHAiOjE0NTM1MjM3NjgsInN1YiI6Im1haWx0bzpwdXNoQGV4YW1wbGUuY29tIn0")
--- print(decode_base64_url "i3CYb7t4xfxCDquptFOepC9GAu_HLGkMlMuCGSK2rpiUfnK9ojFwDXb1JrErtmysazNjjvW2L9OkSSHzvoD1oA")
+local aud = assert(endpoint:match "^(https://[^/]+)")
 
---[[
-{
-  "endpoint": "https://web.push.apple.com/QMBl9kim_dOohaRq5s71jjViZGsUPOCqQMySIPgVyP6OO9d2Ia8sSwkrdXQJshfZAv2O2M0iZtmD9T_tD7h94BGuKL2KHBL6ueg6ZbRVpxoM9pZ8eQfzwsOtGa7D93OnOhCxfzSIwfXN55nWyJOALL_Ep3QnbXMPKJp6A-MmqoY",
-  "keys":{
-    "p256dh": "BAZB7frNVJbrvwDiDyrgaHlDwxIzkSIwp1zuGtInMkoLEE5rTR0zd6dhT7u0JesMJ4sc0hP3WsuPsqszwuwbY_U",
-    "auth": "n_YcnODVI5XEBPTITOlalg"
-  }
-}
-]]
+local jwt_header = encode_base64_url [[{"typ":"JWT","alg":"ES256"}]]
+local jwt_body = encode_base64_url(([[{"aud":"%s","exp":%d,"sub":"%s"}]]):format(aud, os.time() + 12 * 3600, sub))
+local jwt_signature = encode_base64_url(ecdsa(key_path, jwt_header.."."..jwt_body))
+local public_key = export_public_key(get_public_key(read_private_key(key_path)))
+local authorization = ("vapid t=%s.%s.%s,k=%s"):format(jwt_header, jwt_body, jwt_signature, public_key)
+
+-- pem
+local as_private = generate_private_key()
+local as_public = get_public_key(as_private)
+local ua_public = import_public_key(p256dh)
+
+-- bin
+local as_public_bin = decode_base64_url(export_public_key(as_public))
+local ua_public_bin = decode_base64_url(export_public_key(ua_public))
+
+-- binary
+local ecdh_secret = ecdh(as_private, ua_public)
+local auth_secret = decode_base64_url(secret)
+local salt = random(16)
+
+local prk_key = hmac_sha_256(auth_secret, ecdh_secret)
+local key_info = "WebPush: info\0"..ua_public_bin..as_public_bin
+local ikm = hmac_sha_256(prk_key, key_info.."\1")
+
+local prk = hmac_sha_256(salt, ikm)
+local cek_info = "Content-Encoding: aes128gcm\0"
+local cek = hmac_sha_256(prk, cek_info.."\1"):sub(1, 16)
+local nonce_info = "Content-Encoding: nonce\0"
+local nonce = hmac_sha_256(prk, nonce_info.."\1"):sub(1, 12)
+
+-- 最後のレコードは短くなっても構わない。
+local record_size = 4096
+local rs = (">I4"):pack(record_size)
+local header = salt..rs..string.char(#as_public_bin)..as_public_bin
+local cipher_text = aes_128_gcm(cek, nonce, message.."\2")
+
+io.stderr:write(([[
+Authorization: %s
+]]):format(authorization))
+io.write(header, cipher_text)
 
 --[====[
 
-local endpoint = "https://web.push.apple.com/QMBl9kim_dOohaRq5s71jjViZGsUPOCqQMySIPgVyP6OO9d2Ia8sSwkrdXQJshfZAv2O2M0iZtmD9T_tD7h94BGuKL2KHBL6ueg6ZbRVpxoM9pZ8eQfzwsOtGa7D93OnOhCxfzSIwfXN55nWyJOALL_Ep3QnbXMPKJp6A-MmqoY"
-local p256dh = "BAZB7frNVJbrvwDiDyrgaHlDwxIzkSIwp1zuGtInMkoLEE5rTR0zd6dhT7u0JesMJ4sc0hP3WsuPsqszwuwbY_U"
-local auth = "n_YcnODVI5XEBPTITOlalg"
-
-
-local ecdh_secret = nil
-local auth_secret = decode_base64_url(auth)
-local salt = random(16)
-
-local private_key = generate_private_key()
-io.write(private_key)
-local public_key = get_public_key(private_key)
-io.write(public_key)
-io.write(export_public_key(public_key), "\n")
-
-local ua_public = import_public_key(p256dh)
-io.write(ua_public)
-
-local key = ecdh(private_key, ua_public)
-print(encode_base64_url(key))
-
-local test = hmac_sha_256(key, "test")
-print(encode_base64_url(test))
-
--- RFC 8291
-local plain_text = decode_base64_url "V2hlbiBJIGdyb3cgdXAsIEkgd2FudCB0byBiZSBhIHdhdGVybWVsb24"
-local as_public = decode_base64_url "BP4z9KsN6nGRTbVYI_c7VJSPQTBtkgcy27mlmlMoZIIgDll6e3vCYLocInmYWAmS6TlzAC8wEqKK6PBru3jl7A8"
-local ua_public = decode_base64_url "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4"
-
-local ecdh_secret = decode_base64_url "kyrL1jIIOHEzg3sM2ZWRHDRB62YACZhhSlknJ672kSs"
-local auth_secret = decode_base64_url "BTBZMqHH6r4Tts7J_aSIgg"
-local salt = decode_base64_url "DGv6ra1nlYgDCS1FRnbzlw"
-
-local prk_key = hmac_sha_256(auth_secret, ecdh_secret)
-print(#prk_key)
-print(encode_base64_url(prk_key))
-local key_info = "WebPush: info\0"..ua_public..as_public
--- print(encode_base64_url(key_info) == "V2ViUHVzaDogaW5mbwAEJXGyvs3942BVGq8e0PTNNmwRzr5VX4m8t7GGpTM5FzFo7OLr4BhZe9MEebhuPI-OztV3ylkYfpJGmQ22ggCLDgT-M_SrDepxkU21WCP3O1SUj0EwbZIHMtu5pZpTKGSCIA5Zent7wmC6HCJ5mFgJkuk5cwAvMBKiiujwa7t45ewP")
-local ikm = hmac_sha_256(prk_key, key_info.."\1")
-print(encode_base64_url(ikm))
-local prk = hmac_sha_256(salt, ikm)
-print(encode_base64_url(prk))
-local cek_info = "Content-Encoding: aes128gcm\0"
-local cek = hmac_sha_256(prk, cek_info.."\1"):sub(1, 16)
-print(encode_base64_url(cek))
-local nonce_info = "Content-Encoding: nonce\0"
-local nonce = hmac_sha_256(prk, nonce_info.."\1"):sub(1, 12)
-print(encode_base64_url(nonce))
-
-local record_size = 4096
-local rs = (">I4"):pack(record_size)
-
-local header = salt..rs..string.char(#as_public)..as_public
-print(encode_base64_url(header))
-print(#header)
-
-local cipher_text = aes_128_gcm(cek, nonce, plain_text.."\2")
 print(encode_base64_url(cipher_text))
 
 ]====]
