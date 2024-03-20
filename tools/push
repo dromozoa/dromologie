@@ -185,6 +185,12 @@ end
 local function ecdsa(private_key, message)
 end
 
+-- RFC 7515
+-- print(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q")
+print(encode_hex(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q"))
+print(encode_hex "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ")
+print(encode_hex(decode_base64_url "jpsQnnGQmL-YBIffH1136cspYG6-0iY7X1fCE9-E9LI"))
+
 -- RFC 8292
 -- print(decode_base64_url "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9")
 -- print(decode_base64_url "eyJhdWQiOiJodHRwczovL3B1c2guZXhhbXBsZS5uZXQiLCJleHAiOjE0NTM1MjM3NjgsInN1YiI6Im1haWx0bzpwdXNoQGV4YW1wbGUuY29tIn0")
