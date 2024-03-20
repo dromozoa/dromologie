@@ -2,14 +2,14 @@
 
 #include <exception>
 #include <iostream>
-#include <vector>
+#include <string>
 
 using namespace dromologie;
 
 int main(int, char*[]) {
   try {
-    std::vector<char> source = read_all<std::vector<char>>(std::cin);
-    std::cout << encode_base64url(source.data(), source.size());
+    std::vector<char> result = decode_base64url<char>(read_all<std::string>(std::cin));
+    std::cout.write(result.data(), result.size());
 
   } catch (const std::exception& e) {
     std::cerr << "caught exception: " << e.what() << "\n";

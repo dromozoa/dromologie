@@ -30,8 +30,8 @@ namespace dromologie {
   }
 
   template <class T>
-  inline std::vector<T> read_all(std::istream& stream) {
-    std::vector<T> result;
+  inline T read_all(std::istream& stream) {
+    T result;
     std::copy(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>(), std::back_inserter(result));
     return result;
   }
@@ -107,7 +107,7 @@ namespace dromologie {
   template <class T>
   inline std::vector<T> decode_base64url(const std::string& source) {
     std::vector<T> result;
-    for (std::size_t i = 0; i < source.size(); ++i) {
+    for (std::size_t i = 0; i < source.size(); i += 4) {
       if (i + 3 < source.size()) {
         std::uint32_t v
           = decode_base64url_impl(source[i]) << 18
