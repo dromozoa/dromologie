@@ -182,14 +182,23 @@ local function aes_128_gcm(key, iv, message)
   return handle:read "*a"
 end
 
-local function ecdsa(private_key, message)
+local function ecdsa(key_path, message)
+  do
+    local handle <close> = assert(io.open(tmp.filename, "w"))
+    handle:write(message)
+  end
+  local command = ("%s/bin/ecdsa %s `openssl dgst -sha256 <%s`"):format(quote(root), quote(key_path), quote(tmp.filename))
+  local handle <close> = assert(io.popen(command))
+  local data = handle:read "*a"
+  return encode_base64_url(data)
 end
 
 -- RFC 7515
 -- print(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q")
-print(encode_hex(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q"))
-print(encode_hex "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ")
-print(encode_hex(decode_base64_url "jpsQnnGQmL-YBIffH1136cspYG6-0iY7X1fCE9-E9LI"))
+-- print(encode_hex(decode_base64_url "DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q"))
+-- print(encode_hex "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ")
+-- print(encode_hex(decode_base64_url "jpsQnnGQmL-YBIffH1136cspYG6-0iY7X1fCE9-E9LI"))
+print(ecdsa(os.getenv("HOME").."/.dromologie/vapid", "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ"))
 
 -- RFC 8292
 -- print(decode_base64_url "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9")
