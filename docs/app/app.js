@@ -27,10 +27,10 @@ D.Logging = class {
 
 D.testVapidSign = async () => {
   // https://datatracker.ietf.org/doc/html/rfc7515#appendix-A.3
-  const data_string
-    = "eyJhbGciOiJFUzI1NiJ9"
-    + "."
-    + "eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ";
+  const data_string =
+    "eyJhbGciOiJFUzI1NiJ9" +
+    "." +
+    "eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ";
 
   const data = Uint8Array.from(data_string, v => v.charCodeAt(0));
 
@@ -55,10 +55,11 @@ D.testVapidVerify = async (sig_hex) => {
   console.log(sig);
 
   // https://datatracker.ietf.org/doc/html/rfc7515#appendix-A.3
-  const data_string
-    = "eyJhbGciOiJFUzI1NiJ9"
-    + "."
-    + "eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ";
+  const data_string =
+    "eyJhbGciOiJFUzI1NiJ9" +
+    "." +
+    "eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ";
+
 
   const data = Uint8Array.from(data_string, c => c.charCodeAt(0));
 
