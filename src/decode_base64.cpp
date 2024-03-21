@@ -6,9 +6,13 @@
 
 using namespace dromologie;
 
-int main(int, char*[]) {
+int main(int argc, char* argv[]) {
   try {
-    std::cout << decode_base64<std::string>(read_all<std::string>(std::cin));
+    if (argc < 2) {
+      std::cout << decode_base64<std::string>(read_all<std::string>(std::cin));
+    } else {
+      std::cout << decode_base64<std::string>(argv[1]);
+    }
   } catch (const std::exception& e) {
     std::cerr << "caught exception: " << e.what() << "\n";
     return 1;

@@ -104,15 +104,28 @@ ecdh_secret=`ecdh "$ua_public" <"$tmp" | encode_base64url`
 verbose "ecdh_secret: $ecdh_secret"
 auth_secret=$auth
 verbose "auth_secret: $auth_secret"
-salt=`random 4 | encode_base64url`
+salt=`random 16 | encode_base64url`
 verbose "salt: $salt"
 
-prk_key=`printf %s "$ecdh_secret" | decode_base64 | hmac_sha256 "$auth_secret" | encode_base64url`
+prk_key=`decode_base64 "$ecdh_secret" | hmac_sha256 "$auth_secret" | encode_base64url`
 verbose "prk_key: $prk_key"
-key_info=`(printf 'WebPush: info\0' && printf %s "$ua_public" | decode_base64 && printf %s "$as_public" | decode_base64) | encode_base64url`
+key_info=`(printf 'WebPush: info\0' && decode_base64 "$ua_public" && decode_base64 "$as_public") | encode_base64url`
 verbose "key_info: $key_info"
-ikm=`(printf %s "$key_info" | decode_base64 && printf '\1') | hmac_sha256 "$prk_key" | head -c 16 | encode_base64url`
+ikm=`(decode_base64 "$key_info" && printf '\1') | hmac_sha256 "$prk_key" | encode_base64url`
 verbose "ikm: $ikm"
 
-# ikm=`(printf 'WebPush: info\0'; printf %s "$ua_public" | decode_base64; printf %s "$as_public" | decode_base64; printf ) | `
+prk=`(decode_base64 "$ikm" | hmac_sha256 "$salt") | encode_base64url`
+verbose "prk: $prk"
+cek_info=`printf 'Content-Encoding: aes128gcm\0' | encode_base64url`
+verbose "cek_info: $cek_info"
+cek=`(decode_base64 "$cek_info" && printf '\1') | hmac_sha256 "$prk" | head -c 16 | encode_base64url`
+verbose "cek: $cek_info"
+nonce_info=`printf 'Content-Encoding: nonce\0' | encode_base64url`
+verbose "nonce_info: $nonce_info"
+nonce=`(decode_base64 "$nonce_info" && printf '\1') | hmac_sha256 "$prk" | head -c 12 | encode_base64url`
+verbose "nonce: $nonce"
+
+(decode_base64 "$salt" && printf '\0\0\20\0\101' && decode_base64 "$as_public") >"$tmp"
+(cat && printf '\2') | aes128gcm "$cek" "$nonce" >>"$tmp"
+
 
