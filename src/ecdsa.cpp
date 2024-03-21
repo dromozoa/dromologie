@@ -8,6 +8,7 @@
 #include <mbedtls/pk.h>
 
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -15,14 +16,19 @@ using namespace dromologie;
 
 int main(int argc, char* argv[]) {
   try {
-    if (argc < 2) {
-      std::cerr << argv[0] << " hash <key.pem\n";
+    if (argc < 3) {
+      std::cerr << argv[0] << " key.pem hash\n";
       return 1;
     }
 
-    auto key = read_all<std::vector<unsigned char>>(std::cin);
+    std::ifstream in(argv[1]);
+    if (!in) {
+      std::cerr << "cannot open file\n";
+      return 1;
+    }
+    auto key = read_all<std::vector<unsigned char>>(in);
     key.push_back(0);
-    const auto hash = decode_base64<std::vector<unsigned char>>(argv[1]);
+    const auto hash = decode_base64<std::vector<unsigned char>>(argv[2]);
 
     std::vector<unsigned char> buffer(32);
 

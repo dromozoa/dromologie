@@ -74,12 +74,12 @@ trap "rm -f '$tmp'" 0
 # https://datatracker.ietf.org/doc/html/rfc8291
 
 generate_secp256r1 >"$tmp"
-as_public=`export_public_key <"$tmp" | encode_base64url`
+as_public=`export_public_key "$tmp" | encode_base64url`
 verbose "as_public: $as_public"
 ua_public=$p256dh
 verbose "ua_public: $ua_public"
 
-ecdh_secret=`ecdh "$ua_public" <"$tmp" | encode_base64url`
+ecdh_secret=`ecdh "$tmp" "$ua_public" | encode_base64url`
 verbose "ecdh_secret: $ecdh_secret"
 auth_secret=$auth
 verbose "auth_secret: $auth_secret"
@@ -125,12 +125,12 @@ jwt_input=`printf %s "$jwt_header" | encode_base64url`.`printf %s "$jwt_body" | 
 verbose "jwt_input: $jwt_input"
 jwt_input_hash=`printf %s "$jwt_input" | sha256 | encode_base64url`
 verbose "jwt_input_hash: $jwt_input_hash"
-jwt_signature=`ecdsa "$jwt_input_hash" <"$vapid" | encode_base64url`
+jwt_signature=`ecdsa "$vapid" "$jwt_input_hash" | encode_base64url`
 verbose "jwt_signature: $jwt_signature"
 
 vapid_t="$jwt_input.$jwt_signature"
 verbose "vapid_t: $vapid_t"
-vapid_k=`export_public_key <"$vapid" | encode_base64url`
+vapid_k=`export_public_key "$vapid" | encode_base64url`
 verbose "vapid_k: $vapid_k"
 
 send() {

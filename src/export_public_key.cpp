@@ -7,14 +7,25 @@
 
 #include <cstddef>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
 using namespace dromologie;
 
-int main(int, char*[]) {
+int main(int argc, char* argv[]) {
   try {
-    auto key = read_all<std::vector<unsigned char>>(std::cin);
+    if (argc < 2) {
+      std::cerr << argv[0] << " key.pem\n";
+      return 1;
+    }
+
+    std::ifstream in(argv[1]);
+    if (!in) {
+      std::cerr << "cannot open file\n";
+      return 1;
+    }
+    auto key = read_all<std::vector<unsigned char>>(in);
     key.push_back(0);
 
     std::vector<unsigned char> buffer(128);
