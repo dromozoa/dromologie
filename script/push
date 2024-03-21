@@ -1,0 +1,108 @@
+#! /bin/sh -e
+set -o pipefail
+
+here=`dirname "$0"`
+here=`(cd "$here" && pwd)`
+root=`(cd "$here/.." && pwd)`
+
+PATH=$here:$root/bin:$PATH
+export PATH
+
+opt_d=
+opt_e=3600
+opt_h=
+opt_v=
+opt_j=
+
+while getopts de:hj:v opt
+do
+  case X$opt in
+    Xd) opt_d=1;;
+    Xe) opt_e=$OPTARG;;
+    Xh) opt_h=0; break;;
+    Xj) opt_j=$OPTARG;;
+    Xv) opt_v=1;;
+    *) opt_h=1; break;;
+  esac
+done
+shift `expr "$OPTIND" - 1`
+
+if test "X$opt_j" = X
+then
+  test $# -lt 5 && opt_h=1
+else
+  test $# -lt 2 && opt_h=1
+fi
+
+if test "X$opt_h" != X
+then
+  cat <<EOH
+Usage:
+  $0 [-dv] [-e expiry] [--] endpoint p256dh auth vapid.pem email <input
+  $0 [-dv] [-e expiry] -j sub.json [--] vapid.pem email <input
+  $0 -h
+EOH
+  exit "$opt_h"
+fi
+
+verbose() {
+  test "X$opt_v" != X && echo "$@" >&2
+}
+
+if test "X$opt_j" = X
+then
+  endpoint=$1
+  p256dh=$2
+  auth=$3
+  vapid=$4
+  email=$5
+else
+  endpoint=`jq -r .endpoint "$opt_j"`
+  p256dh=`jq -r .keys.p256dh "$opt_j"`
+  auth=`jq -r .keys.auth "$opt_j"`
+  vapid=$1
+  email=$2
+fi
+
+tmp=`mktemp .tmpXXXXXX`
+trap "rm -f '$tmp'" 0
+
+# https://datatracker.ietf.org/doc/html/rfc8292
+
+jwt_header='{"typ":"JWT","alg":"ES256"}'
+verbose "jwt_header: $jwt_header"
+
+aud=`expr "X$endpoint" : 'X\(https://[^/]*\)'`
+verbose "aud: $aud"
+exp=`date +%s`
+exp=`expr "$exp" + "$opt_e"`
+verbose "exp: $exp"
+jwt_body='{"aud":"'$aud'","exp":'$exp',"sub":"mailto:'$email'"}'
+verbose "jwt_body: $jwt_body"
+
+jwt_input=`printf %s "$jwt_header" | encode_base64url`.`printf %s "$jwt_body" | encode_base64url`
+verbose "jwt_input: $jwt_input"
+jwt_input_hash=`printf %s "$jwt_input" | sha256 | encode_base64url`
+verbose "jwt_input_hash: $jwt_input_hash"
+jwt_signature=`ecdsa "$jwt_input_hash" <"$vapid" | encode_base64url`
+verbose "jwt_signature: $jwt_signature"
+
+vapid_t="$jwt_input.$jwt_signature"
+verbose "vapid_t: $vapid_t"
+vapid_k=`export_public_key <"$vapid" | encode_base64url`
+verbose "vapid_k: $vapid_k"
+
+# https://datatracker.ietf.org/doc/html/rfc8291
+
+generate_secp256r1 >"$tmp"
+as_public=`export_public_key <"$tmp" | encode_base64url`
+verbose "as_public: $as_public"
+ua_public=$p256dh
+verbose "ua_public: $ua_public"
+
+ecdh_secret=`ecdh "$ua_public" <"$tmp" | encode_base64url`
+verbose "ecdh_secret: $ecdh_secret"
+auth_secret=$auth
+verbose "auth_secret: $auth_secret"
+salt=`random 4 | encode_base64url`
+verbose "salt: $salt"
