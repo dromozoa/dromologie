@@ -45,17 +45,17 @@ int main(int argc, char* argv[]) {
         r.get(),
         s.get(),
         &ecdsa->MBEDTLS_PRIVATE(d),
-        &hash[0],
+        hash.data(),
         hash.size(),
         MBEDTLS_MD_SHA256,
         mbedtls_ctr_drbg_random,
         ctr_drbg.get()));
 
     std::vector<unsigned char> buffer(32);
-    check(mbedtls_mpi_write_binary(r.get(), &buffer[0], buffer.size()));
-    std::cout.write(reinterpret_cast<const char*>(&buffer[0]), buffer.size());
-    check(mbedtls_mpi_write_binary(s.get(), &buffer[0], buffer.size()));
-    std::cout.write(reinterpret_cast<const char*>(&buffer[0]), buffer.size());
+    check(mbedtls_mpi_write_binary(r.get(), buffer.data(), buffer.size()));
+    std::cout.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+    check(mbedtls_mpi_write_binary(s.get(), buffer.data(), buffer.size()));
+    std::cout.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
 
   } catch (const std::exception& e) {
     std::cerr << "caught exception: " << e.what() << "\n";

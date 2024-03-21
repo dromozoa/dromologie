@@ -28,7 +28,7 @@ int main(int, char*[]) {
       return 1;
     }
 
-    std::vector<unsigned char> buffer(256);
+    std::vector<unsigned char> buffer(128);
     std::size_t size = 0;
     check(mbedtls_ecp_point_write_binary(
         &keypair->MBEDTLS_PRIVATE(grp),
