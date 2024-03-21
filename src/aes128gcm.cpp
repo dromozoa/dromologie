@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
     std::vector<unsigned char> tag(16);
 
     context<mbedtls_gcm_context, mbedtls_gcm_init, mbedtls_gcm_free> gcm;
+
     check(mbedtls_gcm_setkey(gcm.get(), MBEDTLS_CIPHER_ID_AES, key.data(), key.size() * 8));
     check(mbedtls_gcm_starts(gcm.get(), MBEDTLS_GCM_ENCRYPT, iv.data(), iv.size()));
     check(mbedtls_gcm_update(gcm.get(), source.data(), source.size(), buffer.data(), buffer.size(), &size));
