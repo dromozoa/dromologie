@@ -12,8 +12,8 @@ int main(int, char*[]) {
   try {
     context<mbedtls_sha256_context, mbedtls_sha256_init, mbedtls_sha256_free> sha256;
 
-    std::vector<unsigned char> buffer(4096);
     check(mbedtls_sha256_starts(sha256.get(), false));
+    std::vector<unsigned char> buffer(4096);
     while (!std::cin.eof()) {
       std::cin.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
       std::streamsize size = std::cin.gcount();
