@@ -9,18 +9,22 @@ PATH=$here:$root/bin:$PATH
 export PATH
 
 opt_d=
-opt_e=3600
+opt_e=86400
 opt_h=
-opt_v=
 opt_j=
+opt_t=86400
+opt_u=normal
+opt_v=
 
-while getopts de:hj:v opt
+while getopts de:hj:t:u:v opt
 do
   case X$opt in
     Xd) opt_d=1;;
     Xe) opt_e=$OPTARG;;
     Xh) opt_h=0; break;;
     Xj) opt_j=$OPTARG;;
+    Xt) opt_t=$OPTARG;;
+    Xu) opt_u=$OPTARG;;
     Xv) opt_v=1;;
     *) opt_h=1; break;;
   esac
@@ -38,8 +42,8 @@ if test "X$opt_h" != X
 then
   cat <<EOH
 Usage:
-  $0 [-dv] [-e expiry] [--] endpoint p256dh auth vapid.pem email <input
-  $0 [-dv] [-e expiry] -j sub.json [--] vapid.pem email <input
+  $0 [-dv] [-e expiry] [-t TTL] [-u urgency] [--] endpoint p256dh auth vapid.pem email <input
+  $0 [-dv] [-e expiry] [-t TTL] [-u urgency] -j sub.json [--] vapid.pem email <input
   $0 -h
 EOH
   exit "$opt_h"
@@ -67,6 +71,43 @@ fi
 tmp=`mktemp .tmpXXXXXX`
 trap "rm -f '$tmp'" 0
 
+# https://datatracker.ietf.org/doc/html/rfc8291
+
+generate_secp256r1 >"$tmp"
+as_public=`export_public_key <"$tmp" | encode_base64url`
+verbose "as_public: $as_public"
+ua_public=$p256dh
+verbose "ua_public: $ua_public"
+
+ecdh_secret=`ecdh "$ua_public" <"$tmp" | encode_base64url`
+verbose "ecdh_secret: $ecdh_secret"
+auth_secret=$auth
+verbose "auth_secret: $auth_secret"
+salt=`random 16 | encode_base64url`
+verbose "salt: $salt"
+
+prk_key=`hmac_sha256 "$auth_secret" "$ecdh_secret" | encode_base64url`
+verbose "prk_key: $prk_key"
+key_info=`(printf 'WebPush: info\0' && decode_base64 "$ua_public" && decode_base64 "$as_public" && printf '\1') | encode_base64url`
+verbose "key_info: $key_info"
+ikm=`hmac_sha256 "$prk_key" "$key_info" | encode_base64url`
+verbose "ikm: $ikm"
+
+prk=`hmac_sha256 "$salt" "$ikm" | encode_base64url`
+verbose "prk: $prk"
+cek_info=`printf 'Content-Encoding: aes128gcm\0\1' | encode_base64url`
+verbose "cek_info: $cek_info"
+cek=`hmac_sha256 "$prk" "$cek_info" | head -c 16 | encode_base64url`
+verbose "cek: $cek_info"
+nonce_info=`printf 'Content-Encoding: nonce\0\1' | encode_base64url`
+verbose "nonce_info: $nonce_info"
+nonce=`hmac_sha256 "$prk" "$nonce_info" | head -c 12 | encode_base64url`
+verbose "nonce: $nonce"
+
+(decode_base64 "$salt" && printf '\0\0\20\0\101' && decode_base64 "$as_public") >"$tmp"
+(cat && printf '\2') | aes128gcm "$cek" "$nonce" >>"$tmp"
+test "X$opt_v" != X && od -t x1 "$tmp"
+
 # https://datatracker.ietf.org/doc/html/rfc8292
 
 jwt_header='{"typ":"JWT","alg":"ES256"}'
@@ -92,38 +133,25 @@ verbose "vapid_t: $vapid_t"
 vapid_k=`export_public_key <"$vapid" | encode_base64url`
 verbose "vapid_k: $vapid_k"
 
-# https://datatracker.ietf.org/doc/html/rfc8291
+send() {
+  if test "X$opt_v" = X
+  then
+    curlopt=-fLsS
+  else
+    curlopt=-fLv
+  fi
 
-generate_secp256r1 >"$tmp"
-as_public=`export_public_key <"$tmp" | encode_base64url`
-verbose "as_public: $as_public"
-ua_public=$p256dh
-verbose "ua_public: $ua_public"
+  if test "X$opt_d" = X
+  then
+    curl $curlopt "$@"
+  else
+    echo curl $curlopt "$@"
+  fi
+}
 
-ecdh_secret=`ecdh "$ua_public" <"$tmp" | encode_base64url`
-verbose "ecdh_secret: $ecdh_secret"
-auth_secret=$auth
-verbose "auth_secret: $auth_secret"
-salt=`random 16 | encode_base64url`
-verbose "salt: $salt"
-
-prk_key=`decode_base64 "$ecdh_secret" | hmac_sha256 "$auth_secret" | encode_base64url`
-verbose "prk_key: $prk_key"
-key_info=`(printf 'WebPush: info\0' && decode_base64 "$ua_public" && decode_base64 "$as_public") | encode_base64url`
-verbose "key_info: $key_info"
-ikm=`(decode_base64 "$key_info" && printf '\1') | hmac_sha256 "$prk_key" | encode_base64url`
-verbose "ikm: $ikm"
-
-prk=`(decode_base64 "$ikm" | hmac_sha256 "$salt") | encode_base64url`
-verbose "prk: $prk"
-cek_info=`printf 'Content-Encoding: aes128gcm\0' | encode_base64url`
-verbose "cek_info: $cek_info"
-cek=`(decode_base64 "$cek_info" && printf '\1') | hmac_sha256 "$prk" | head -c 16 | encode_base64url`
-verbose "cek: $cek_info"
-nonce_info=`printf 'Content-Encoding: nonce\0' | encode_base64url`
-verbose "nonce_info: $nonce_info"
-nonce=`(decode_base64 "$nonce_info" && printf '\1') | hmac_sha256 "$prk" | head -c 12 | encode_base64url`
-verbose "nonce: $nonce"
-
-(decode_base64 "$salt" && printf '\0\0\20\0\101' && decode_base64 "$as_public") >"$tmp"
-(cat && printf '\2') | aes128gcm "$cek" "$nonce" >>"$tmp"
+send "$endpoint" \
+  -H "TTL: $opt_t" \
+  -H "Urgency: $opt_u" \
+  -H "Content-Encoding: aes128gcm" \
+  -H "Authorization: vapid t=$vapid_t,k=$vapid_k" \
+  --data-binary "@$tmp"
