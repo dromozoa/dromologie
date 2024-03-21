@@ -10,9 +10,10 @@ using namespace dromologie;
 
 int main(int, char*[]) {
   try {
+    std::vector<unsigned char> buffer(4096);
+
     context<mbedtls_sha256_context, mbedtls_sha256_init, mbedtls_sha256_free> sha256;
 
-    std::vector<unsigned char> buffer(4096);
     check(mbedtls_sha256_starts(sha256.get(), false));
     while (!std::cin.eof()) {
       std::cin.read(reinterpret_cast<char*>(buffer.data()), buffer.size());

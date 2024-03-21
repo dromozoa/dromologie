@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
     key.push_back(0);
     const auto hash = decode_base64<std::vector<unsigned char>>(argv[1]);
 
+    std::vector<unsigned char> buffer(32);
+
     context<mbedtls_entropy_context, mbedtls_entropy_init, mbedtls_entropy_free> entropy;
     context<mbedtls_ctr_drbg_context, mbedtls_ctr_drbg_init, mbedtls_ctr_drbg_free> ctr_drbg;
     context<mbedtls_pk_context, mbedtls_pk_init, mbedtls_pk_free> pk;
@@ -51,7 +53,6 @@ int main(int argc, char* argv[]) {
         mbedtls_ctr_drbg_random,
         ctr_drbg.get()));
 
-    std::vector<unsigned char> buffer(32);
     check(mbedtls_mpi_write_binary(r.get(), buffer.data(), buffer.size()));
     std::cout.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
     check(mbedtls_mpi_write_binary(s.get(), buffer.data(), buffer.size()));

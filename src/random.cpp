@@ -23,11 +23,12 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
+    std::vector<unsigned char> buffer(size);
+
     context<mbedtls_entropy_context, mbedtls_entropy_init, mbedtls_entropy_free> entropy;
     context<mbedtls_ctr_drbg_context, mbedtls_ctr_drbg_init, mbedtls_ctr_drbg_free> ctr_drbg;
 
     check(mbedtls_ctr_drbg_seed(ctr_drbg.get(), mbedtls_entropy_func, entropy.get(), nullptr, 0));
-    std::vector<unsigned char> buffer(size);
     check(mbedtls_ctr_drbg_random(ctr_drbg.get(), buffer.data(), buffer.size()));
     std::cout.write(reinterpret_cast<const char*>(buffer.data()), size);
 

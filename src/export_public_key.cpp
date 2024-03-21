@@ -17,6 +17,9 @@ int main(int, char*[]) {
     auto key = read_all<std::vector<unsigned char>>(std::cin);
     key.push_back(0);
 
+    std::vector<unsigned char> buffer(128);
+    std::size_t size = 0;
+
     context<mbedtls_entropy_context, mbedtls_entropy_init, mbedtls_entropy_free> entropy;
     context<mbedtls_ctr_drbg_context, mbedtls_ctr_drbg_init, mbedtls_ctr_drbg_free> ctr_drbg;
     context<mbedtls_pk_context, mbedtls_pk_init, mbedtls_pk_free> pk;
@@ -29,8 +32,6 @@ int main(int, char*[]) {
       return 1;
     }
 
-    std::vector<unsigned char> buffer(128);
-    std::size_t size = 0;
     check(mbedtls_ecp_point_write_binary(
         &keypair->MBEDTLS_PRIVATE(grp),
         &keypair->MBEDTLS_PRIVATE(Q),
