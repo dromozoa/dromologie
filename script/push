@@ -127,5 +127,3 @@ verbose "nonce: $nonce"
 
 (decode_base64 "$salt" && printf '\0\0\20\0\101' && decode_base64 "$as_public") >"$tmp"
 (cat && printf '\2') | aes128gcm "$cek" "$nonce" >>"$tmp"
-
-

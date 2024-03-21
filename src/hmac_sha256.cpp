@@ -15,22 +15,23 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
+    std::vector<unsigned char> source;
+    if (argc < 3) {
+      source = read_all<std::vector<unsigned char>>(std::cin);
+    } else {
+      source = decode_base64<std::vector<unsigned char>>(argv[2]);
+    }
     const auto key = decode_base64<std::vector<unsigned char>>(argv[1]);
 
     context<mbedtls_md_context_t, mbedtls_md_init, mbedtls_md_free> md;
 
     check(mbedtls_md_setup(md.get(), mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), true));
     check(mbedtls_md_hmac_starts(md.get(), key.data(), key.size()));
-    std::vector<unsigned char> buffer(4096);
-    while (!std::cin.eof()) {
-      std::cin.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
-      std::streamsize size = std::cin.gcount();
-      if (size > 0) {
-        check(mbedtls_md_hmac_update(md.get(), buffer.data(), size));
-      }
-    }
+    check(mbedtls_md_hmac_update(md.get(), source.data(), source.size()));
+
+    std::vector<unsigned char> buffer(32);
     check(mbedtls_md_hmac_finish(md.get(), buffer.data()));
-    std::cout.write(reinterpret_cast<const char*>(buffer.data()), 32);
+    std::cout.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
 
   } catch (const std::exception& e) {
     std::cerr << "caught exception: " << e.what() << "\n";
