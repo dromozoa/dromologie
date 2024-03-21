@@ -106,3 +106,13 @@ auth_secret=$auth
 verbose "auth_secret: $auth_secret"
 salt=`random 4 | encode_base64url`
 verbose "salt: $salt"
+
+prk_key=`printf %s "$ecdh_secret" | decode_base64 | hmac_sha256 "$auth_secret" | encode_base64url`
+verbose "prk_key: $prk_key"
+key_info=`(printf 'WebPush: info\0' && printf %s "$ua_public" | decode_base64 && printf %s "$as_public" | decode_base64) | encode_base64url`
+verbose "key_info: $key_info"
+ikm=`(printf %s "$key_info" | decode_base64 && printf '\1') | hmac_sha256 "$prk_key" | head -c 16 | encode_base64url`
+verbose "ikm: $ikm"
+
+# ikm=`(printf 'WebPush: info\0'; printf %s "$ua_public" | decode_base64; printf %s "$as_public" | decode_base64; printf ) | `
+
