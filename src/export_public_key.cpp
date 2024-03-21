@@ -5,6 +5,7 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 
+#include <cstddef>
 #include <exception>
 #include <iostream>
 #include <vector>
