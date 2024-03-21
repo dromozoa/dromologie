@@ -1,6 +1,8 @@
 #include "common.hpp"
 
 #include <mbedtls/ctr_drbg.h>
+#include <mbedtls/ecp.h>
+#include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 
 #include <exception>
