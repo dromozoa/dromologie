@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <iosfwd>
 #include <iterator>
 #include <stdexcept>
@@ -18,6 +19,15 @@ namespace dromologie {
     T result;
     std::copy(std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>(), std::back_inserter(result));
     return result;
+  }
+
+  template <class T>
+  inline T read_file(const std::string& path) {
+    std::ifstream in(path);
+    if (!in) {
+      throw std::runtime_error("cannot open file");
+    }
+    return read_all<T>(in);
   }
 
   inline std::vector<char> make_base64url_encoder() {

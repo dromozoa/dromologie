@@ -8,7 +8,6 @@
 #include <mbedtls/pk.h>
 
 #include <exception>
-#include <fstream>
 #include <iostream>
 #include <vector>
 
@@ -21,12 +20,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    std::ifstream in(argv[1]);
-    if (!in) {
-      std::cerr << "cannot open file\n";
-      return 1;
-    }
-    auto key = read_all<std::vector<unsigned char>>(in);
+    auto key = read_file<std::vector<unsigned char>>(argv[1]);
     key.push_back(0);
     const auto hash = decode_base64<std::vector<unsigned char>>(argv[2]);
 
