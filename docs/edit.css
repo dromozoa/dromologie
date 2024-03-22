@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  font-family: "Noto Serif JP", serif;
+  line-height: 2;
+  background-color: #EEE;
+}
+
+.main {
+  width: 24em;
+  margin: 0 auto;
+  background-color: #FFF;
+}
+
+.container {
+  height: 50vh;
+  overflow: scroll;
+}
